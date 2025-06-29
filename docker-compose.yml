@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: aatedence-postgres
+    environment:
+      POSTGRES_DB: attendance_system
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin321
+    ports:
+      - "7009:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build:
+      context: ./Backend
+    container_name: aatedence-backend
+    ports:
+      - "3103:3103"
+    depends_on:
+      - postgres
+    environment:
+      - PORT=3103
+      - DB_USER=postgres
+      - DB_HOST=postgres
+      - DB_NAME=attendance_system
+      - DB_PASSWORD=admin321
+      - DB_PORT=5432
+
+  frontend:
+    build:
+      context: ./Frontend
+    container_name: aatedence-frontend
+    ports:
+      - "6185:80"
+    depends_on:
+      - backend
+
+  hr:
+    build:
+      context: ./HR
+    container_name: aatedence-hr
+    ports:
+      - "6186:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+
